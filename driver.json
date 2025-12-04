@@ -1,0 +1,37 @@
+{
+  "driver_id": "demo_integration",
+  "version": "0.1.0",
+  "min_core_api": "0.20.0",
+  "name": { "en": "Demo Integration" },
+  "icon": "uc:integration",
+  "description": {
+    "en": "Demo integration for testing the ucapi-framework. Simulates a media player that cycles through TV show names."
+  },
+  "developer": {
+    "name": "Unfolded Circle ApS",
+    "email": "hello@unfoldedcircle.com",
+    "url": "https://github.com/unfoldedcircle"
+  },
+  "home_page": "https://github.com/jackjpowell/uc-intg-demo",
+  "setup_data_schema": {
+    "title": {
+      "en": "Demo Integration Setup"
+    },
+    "settings": [
+      {
+        "id": "info",
+        "label": {
+          "en": "About Demo Integration"
+        },
+        "field": {
+          "label": {
+            "value": {
+              "en": "This demo integration simulates a media player device for testing purposes. It polls every 30 seconds and updates the media title with random TV show names. Press PLAY/PAUSE to cycle to a new show."
+            }
+          }
+        }
+      }
+    ]
+  },
+  "release_date": "2025-12-03"
+}

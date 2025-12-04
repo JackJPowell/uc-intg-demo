@@ -1,0 +1,21 @@
+[project]
+name = "uc-intg-demo"
+version = "0.1.0"
+description = "Unfolded Circle Integration Demo"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MPL-2.0"
+
+authors = [
+    { name = "Jack Powell", email = "jack.powell@example.com" }
+]
+
+# TODO: Update repository URL
+urls.Homepage = "https://github.com/jackjpowell/uc-intg-demo"
+urls.Repository = "https://github.com/jackjpowell/uc-intg-demo"
+
+dependencies = [
+    "ucapi==0.4.0",
+    "ucapi-framework==1.2.0",
+    "pyee>=9.0",
+]

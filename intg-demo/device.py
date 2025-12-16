@@ -143,6 +143,7 @@ class DemoDevice(PollingDevice):
             MediaAttr.STATE: self._power_state,
             MediaAttr.MEDIA_IMAGE_URL: "https://avatars.githubusercontent.com/u/102359576?s=200&v=4",
         }
+
         self.events.emit(
             DeviceEvents.UPDATE,
             create_entity_id(EntityTypes.MEDIA_PLAYER, self.identifier),

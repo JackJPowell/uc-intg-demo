@@ -71,7 +71,11 @@ class DemoMediaPlayer(MediaPlayer):
         )
 
     async def handle_command(
-        self, entity: MediaPlayer, cmd_id: str, params: dict[str, Any] | None
+        self,
+        entity: MediaPlayer,
+        cmd_id: str,
+        params: dict[str, Any] | None,
+        _: Any | None = None,
     ) -> ucapi.StatusCodes:
         """
         Handle media player commands from the remote.
@@ -85,7 +89,7 @@ class DemoMediaPlayer(MediaPlayer):
         - TOGGLE: Toggle power state
         - PLAY_PAUSE: Cycle to a random TV show and update media title
 
-        :param entity: The media player entity receiving the command
+        :param entity: The entity receiving the command (not used, same as self)
         :param cmd_id: The command identifier
         :param params: Optional command parameters
         :return: Status code indicating success or failure

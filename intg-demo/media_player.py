@@ -18,7 +18,7 @@ from ucapi.media_player import DeviceClasses, Attributes
 
 import device
 from const import DemoConfig
-from ucapi_framework import create_entity_id
+from ucapi_framework import create_entity_id, Entity as FrameworkEntity
 
 _LOG = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ FEATURES = [
 ]
 
 
-class DemoMediaPlayer(MediaPlayer):
+class DemoMediaPlayer(MediaPlayer, FrameworkEntity):
     """
     Demo Media Player entity for testing the ucapi-framework.
 
@@ -115,6 +115,7 @@ class DemoMediaPlayer(MediaPlayer):
                     _LOG.warning("Unhandled command: %s", cmd_id)
                     return ucapi.StatusCodes.NOT_IMPLEMENTED
 
+            self.update(self._device.attributes)
             return ucapi.StatusCodes.OK
 
         except Exception as ex:

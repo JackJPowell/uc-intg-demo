@@ -54,7 +54,7 @@ async def main():
     )
 
     # Register all configured devices from config file
-    await driver.register_all_configured_devices()
+    await driver.register_all_device_instances()
 
     # Set up device setup flow - no discovery needed for the demo device
     # The setup flow only requires an IP address input

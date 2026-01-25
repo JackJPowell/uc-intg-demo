@@ -23,6 +23,7 @@ from ucapi_framework import (
     MediaPlayerAttributes,
     PollingDevice,
     create_entity_id,
+    BaseIntegrationDriver,
 )
 from ucapi_framework.device import DeviceEvents
 
@@ -52,6 +53,7 @@ class DemoDevice(PollingDevice):
         device_config: DemoConfig,
         loop: AbstractEventLoop | None,
         config_manager: BaseConfigManager | None = None,
+        driver: BaseIntegrationDriver | None = None,
     ) -> None:
         """
         Initialize the demo device.
@@ -65,6 +67,7 @@ class DemoDevice(PollingDevice):
             loop=loop,
             poll_interval=POLL_INTERVAL,
             config_manager=config_manager,
+            driver=driver,
         )
 
         # Initialize device state tracking

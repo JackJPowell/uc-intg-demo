@@ -1,6 +1,6 @@
 [project]
 name = "uc-intg-demo"
-version = "1.0.1"
+version = "1.0.2"
 description = "Unfolded Circle Integration Demo"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -16,6 +16,6 @@ urls.Repository = "https://github.com/jackjpowell/uc-intg-demo"
 
 dependencies = [
     "ucapi==0.5.1",
-    "ucapi-framework==1.6.6",
+    "ucapi-framework==1.7.0",
     "pyee>=9.0",
 ]

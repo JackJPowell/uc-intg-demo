@@ -13,28 +13,24 @@ the ucapi-framework after changes.
 import logging
 import random
 from asyncio import AbstractEventLoop
-from enum import StrEnum
 from typing import Any
 
 from const import DemoConfig, TV_SHOWS
-from ucapi import EntityTypes
+from ucapi import EntityTypes, media_player
 from ucapi.media_player import Attributes as MediaAttr
-from ucapi_framework import BaseConfigManager, PollingDevice, create_entity_id
+from ucapi_framework import (
+    BaseConfigManager,
+    MediaPlayerAttributes,
+    PollingDevice,
+    create_entity_id,
+    BaseIntegrationDriver,
+)
 from ucapi_framework.device import DeviceEvents
 
 _LOG = logging.getLogger(__name__)
 
 # Polling interval in seconds - the demo device polls every 30 seconds
 POLL_INTERVAL = 30
-
-
-class PowerState(StrEnum):
-    """Power state enumeration for the demo device."""
-
-    OFF = "OFF"
-    ON = "ON"
-    PLAYING = "PLAYING"
-    PAUSED = "PAUSED"
 
 
 class DemoDevice(PollingDevice):
@@ -57,6 +53,7 @@ class DemoDevice(PollingDevice):
         device_config: DemoConfig,
         loop: AbstractEventLoop | None,
         config_manager: BaseConfigManager | None = None,
+        driver: BaseIntegrationDriver | None = None,
     ) -> None:
         """
         Initialize the demo device.
@@ -70,11 +67,19 @@ class DemoDevice(PollingDevice):
             loop=loop,
             poll_interval=POLL_INTERVAL,
             config_manager=config_manager,
+            driver=driver,
         )
 
         # Initialize device state tracking
-        self._power_state: PowerState = PowerState.OFF
+        self._power_state: media_player.States = media_player.States.OFF
         self._media_title: str = ""
+
+        # Initialize MediaPlayerAttributes dataclass for state management
+        self.attributes = MediaPlayerAttributes(
+            STATE=media_player.States.OFF,
+            MEDIA_TITLE="",
+            MEDIA_IMAGE_URL="https://avatars.githubusercontent.com/u/102359576?s=200&v=4",
+        )
 
     # =========================================================================
     # Properties
@@ -96,7 +101,7 @@ class DemoDevice(PollingDevice):
         return self._device_config.address
 
     @property
-    def state(self) -> PowerState:
+    def state(self) -> media_player.States:
         """Return the current power state."""
         return self._power_state
 
@@ -135,20 +140,10 @@ class DemoDevice(PollingDevice):
             self.address,
         )
         # Set initial state to ON when connecting
-        self._power_state = PowerState.ON
+        self._power_state = media_player.States.ON
         self._select_random_show()
-        self._emit_state_update()
-
-        attributes: dict[MediaAttr, Any] = {
-            MediaAttr.STATE: self._power_state,
-            MediaAttr.MEDIA_IMAGE_URL: "https://avatars.githubusercontent.com/u/102359576?s=200&v=4",
-        }
-
-        self.events.emit(
-            DeviceEvents.UPDATE,
-            create_entity_id(EntityTypes.MEDIA_PLAYER, self.identifier),
-            attributes,
-        )
+        self.attributes.STATE = self._power_state
+        self.attributes.MEDIA_TITLE = self._media_title
 
     async def poll_device(self) -> None:
         """
@@ -165,11 +160,13 @@ class DemoDevice(PollingDevice):
         _LOG.debug("[%s] Polling demo device...", self.log_id)
 
         # Only update media title if device is ON or PLAYING
-        if self._power_state in (PowerState.ON, PowerState.PLAYING):
+        if self._power_state in (media_player.States.ON, media_player.States.PLAYING):
             self._select_random_show()
             _LOG.info(
                 "[%s] Poll update - Now showing: %s", self.log_id, self._media_title
             )
+            self.attributes.STATE = self._power_state
+            self.attributes.MEDIA_TITLE = self._media_title
             self._emit_state_update()
 
     # =========================================================================
@@ -179,21 +176,27 @@ class DemoDevice(PollingDevice):
     async def power_on(self) -> None:
         """Turn on the demo device."""
         _LOG.debug("[%s] Powering on", self.log_id)
-        self._power_state = PowerState.ON
+        self._power_state = media_player.States.ON
         self._select_random_show()
-        self._emit_state_update()
+        self.attributes.STATE = self._power_state
+        self.attributes.MEDIA_TITLE = self._media_title
 
     async def power_off(self) -> None:
         """Turn off the demo device."""
         _LOG.debug("[%s] Powering off", self.log_id)
-        self._power_state = PowerState.OFF
+        self._power_state = media_player.States.OFF
         self._media_title = ""
-        self._emit_state_update()
+        self.attributes.STATE = self._power_state
+        self.attributes.MEDIA_TITLE = self._media_title
 
     async def power_toggle(self) -> None:
         """Toggle the demo device power state."""
         _LOG.debug("[%s] Toggling power", self.log_id)
-        if self._power_state in (PowerState.ON, PowerState.PLAYING, PowerState.PAUSED):
+        if self._power_state in (
+            media_player.States.ON,
+            media_player.States.PLAYING,
+            media_player.States.PAUSED,
+        ):
             await self.power_off()
         else:
             await self.power_on()
@@ -211,24 +214,24 @@ class DemoDevice(PollingDevice):
         """
         _LOG.debug("[%s] Play/Pause pressed", self.log_id)
 
-        if self._power_state == PowerState.OFF:
+        if self._power_state == media_player.States.OFF:
             # Turn on if off
             await self.power_on()
-            self._power_state = PowerState.PLAYING
-        elif self._power_state == PowerState.PAUSED:
+            self._power_state = media_player.States.PLAYING
+        elif self._power_state == media_player.States.PAUSED:
             # Resume playing and pick a new show
-            self._power_state = PowerState.PLAYING
+            self._power_state = media_player.States.PLAYING
             self._select_random_show()
         elif self._power_state in (
-            PowerState.ON,
-            PowerState.PLAYING,
-            PowerState.PAUSED,
+            media_player.States.ON,
+            media_player.States.PLAYING,
+            media_player.States.PAUSED,
         ):
             # Toggle between playing and paused, pick new show when resuming
-            if self._power_state == PowerState.PLAYING:
-                self._power_state = PowerState.PAUSED
+            if self._power_state == media_player.States.PLAYING:
+                self._power_state = media_player.States.PAUSED
             else:
-                self._power_state = PowerState.PLAYING
+                self._power_state = media_player.States.PLAYING
             self._select_random_show()
 
         _LOG.info(
@@ -237,7 +240,8 @@ class DemoDevice(PollingDevice):
             self._media_title,
             self._power_state,
         )
-        self._emit_state_update()
+        self.attributes.STATE = self._power_state
+        self.attributes.MEDIA_TITLE = self._media_title
 
     # =========================================================================
     # Helper Methods
@@ -260,3 +264,16 @@ class DemoDevice(PollingDevice):
             create_entity_id(EntityTypes.MEDIA_PLAYER, self.identifier),
             attributes,
         )
+
+    def get_device_attributes(
+        self, entity_id: str
+    ) -> dict[str, Any] | MediaPlayerAttributes:
+        """Return current device attributes for the given entity.
+
+        Called by the framework when refreshing entity state.
+        Returns a dictionary with current device state.
+
+        :param entity_id: Entity identifier
+        :return: Dictionary of current state
+        """
+        return self.attributes

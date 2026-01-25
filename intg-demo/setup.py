@@ -19,39 +19,6 @@ from ucapi_framework import BaseSetupFlow
 
 _LOG = logging.getLogger(__name__)
 
-# Simple setup form - only requires an IP address
-# The device name and ID are auto-generated for simplicity
-_DEMO_INPUT_SCHEMA = RequestUserInput(
-    {"en": "Demo Device Setup"},
-    [
-        {
-            "id": "info",
-            "label": {
-                "en": "Setup Demo Device",
-            },
-            "field": {
-                "label": {
-                    "value": {
-                        "en": (
-                            "Enter an IP address to set up the demo device. "
-                            "This is a simulated device for testing the ucapi-framework. "
-                            "The IP address doesn't need to be reachable - it's just used "
-                            "as a placeholder identifier."
-                        ),
-                    }
-                }
-            },
-        },
-        {
-            "field": {"text": {"value": "192.168.1.100"}},
-            "id": "address",
-            "label": {
-                "en": "IP Address",
-            },
-        },
-    ],
-)
-
 
 class DemoSetupFlow(BaseSetupFlow[DemoConfig]):
     """
@@ -68,7 +35,36 @@ class DemoSetupFlow(BaseSetupFlow[DemoConfig]):
 
         :return: RequestUserInput with a simple IP address field
         """
-        return _DEMO_INPUT_SCHEMA
+        return RequestUserInput(
+            {"en": "Demo Device Setup"},
+            [
+                {
+                    "id": "info",
+                    "label": {
+                        "en": "Setup Demo Device",
+                    },
+                    "field": {
+                        "label": {
+                            "value": {
+                                "en": (
+                                    "Enter an IP address to set up the demo device. "
+                                    "This is a simulated device for testing the ucapi-framework. "
+                                    "The IP address doesn't need to be reachable - it's just used "
+                                    "as a placeholder identifier."
+                                ),
+                            }
+                        }
+                    },
+                },
+                {
+                    "field": {"text": {"value": "192.168.1.100"}},
+                    "id": "address",
+                    "label": {
+                        "en": "IP Address",
+                    },
+                },
+            ],
+        )
 
     async def query_device(
         self, input_values: dict[str, Any]
@@ -93,7 +89,7 @@ class DemoSetupFlow(BaseSetupFlow[DemoConfig]):
         # Validate required field
         if not address:
             _LOG.warning("Address is required, re-displaying form")
-            return _DEMO_INPUT_SCHEMA
+            return self.get_manual_entry_form()
 
         _LOG.debug("Setting up demo device with address: %s", address)
 

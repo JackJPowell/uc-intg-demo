@@ -111,14 +111,15 @@ class DemoDevice(PollingDevice):
     # Typed attribute accessors (keyed by device_id)
     # =========================================================================
 
-    def get_media_player_attributes(self, device_id: str) -> MediaPlayerAttributes | None:
+    def get_media_player_attributes(
+        self, device_id: str
+    ) -> MediaPlayerAttributes | None:
         """Return current MediaPlayer attributes for the given device_id."""
         return self._media_player_attributes.get(device_id)
 
     # =========================================================================
     # PollingDevice Implementation
     # =========================================================================
-
 
     async def establish_connection(self) -> None:
         """
@@ -302,5 +303,3 @@ class DemoDevice(PollingDevice):
         # Avoid selecting the same show twice in a row
         available_shows = [show for show in TV_SHOWS if show != self._media_title]
         self._media_title = random.choice(available_shows)
-
-

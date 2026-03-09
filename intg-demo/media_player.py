@@ -18,7 +18,11 @@ from ucapi.media_player import DeviceClasses, Attributes
 
 import device
 from const import DemoConfig
-from ucapi_framework import create_entity_id, Entity as FrameworkEntity
+from ucapi_framework import (
+    create_entity_id,
+    MediaPlayerAttributes,
+    MediaPlayerEntity,
+)
 
 _LOG = logging.getLogger(__name__)
 
@@ -32,7 +36,7 @@ FEATURES = [
 ]
 
 
-class DemoMediaPlayer(MediaPlayer, FrameworkEntity):
+class DemoMediaPlayer(MediaPlayerEntity):
     """
     Demo Media Player entity for testing the ucapi-framework.
 
@@ -62,17 +66,30 @@ class DemoMediaPlayer(MediaPlayer, FrameworkEntity):
             config_device.name,
             FEATURES,
             attributes={
-                Attributes.STATE: device_instance.state,
-                Attributes.MEDIA_TITLE: device_instance.media_title,
+                Attributes.STATE: media_player.States.UNKNOWN,
             },
             # Using STREAMING_BOX as the device class for the demo
             device_class=DeviceClasses.STREAMING_BOX,
             cmd_handler=self.handle_command,
         )
 
+        if device_instance is not None:
+            self.subscribe_to_device(device_instance)
+
+    async def sync_state(self) -> None:
+        """Sync entity state from device."""
+        attrs = self._device.get_media_player_attributes(self._device.identifier)
+        self.update(
+            MediaPlayerAttributes(
+                STATE=self._device.state,
+                MEDIA_TITLE=attrs.MEDIA_TITLE if attrs else None,
+                MEDIA_IMAGE_URL=attrs.MEDIA_IMAGE_URL if attrs else None,
+            )
+        )
+
     async def handle_command(
         self,
-        entity: MediaPlayer,
+        _entity: MediaPlayer,
         cmd_id: str,
         params: dict[str, Any] | None,
         _: Any | None = None,
@@ -96,6 +113,10 @@ class DemoMediaPlayer(MediaPlayer, FrameworkEntity):
         """
         _LOG.info("Received command: %s %s", cmd_id, params if params else "")
 
+        if self._device is None:
+            _LOG.warning("No device instance for entity: %s", self.id)
+            return ucapi.StatusCodes.SERVICE_UNAVAILABLE
+
         try:
             match cmd_id:
                 case media_player.Commands.ON:
@@ -115,7 +136,6 @@ class DemoMediaPlayer(MediaPlayer, FrameworkEntity):
                     _LOG.warning("Unhandled command: %s", cmd_id)
                     return ucapi.StatusCodes.NOT_IMPLEMENTED
 
-            self.update(self._device.attributes)
             return ucapi.StatusCodes.OK
 
         except Exception as ex:

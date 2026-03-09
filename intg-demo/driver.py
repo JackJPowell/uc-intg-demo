@@ -25,6 +25,8 @@ import os
 from const import DemoConfig
 from device import DemoDevice
 from media_player import DemoMediaPlayer
+from remote import DemoRemote
+from select_entity import DemoSelect
 from setup import DemoSetupFlow
 from ucapi_framework import BaseConfigManager, BaseIntegrationDriver, get_config_path
 
@@ -37,12 +39,14 @@ async def main():
     level = os.getenv("UC_LOG_LEVEL", "DEBUG").upper()
     logging.getLogger("driver").setLevel(level)
     logging.getLogger("media_player").setLevel(level)
+    logging.getLogger("remote").setLevel(level)
+    logging.getLogger("select_entity").setLevel(level)
     logging.getLogger("device").setLevel(level)
     logging.getLogger("setup_flow").setLevel(level)
 
-    # Initialize the integration driver with the demo device and media player
+    # Initialize the integration driver with the demo device, media player, remote and select
     driver = BaseIntegrationDriver(
-        device_class=DemoDevice, entity_classes=[DemoMediaPlayer]
+        device_class=DemoDevice, entity_classes=[DemoMediaPlayer, DemoSelect]
     )
 
     # Configure the device config manager with DemoConfig

@@ -46,7 +46,8 @@ async def main():
 
     # Initialize the integration driver with the demo device, media player, remote and select
     driver = BaseIntegrationDriver(
-        device_class=DemoDevice, entity_classes=[DemoMediaPlayer, DemoSelect]
+        device_class=DemoDevice,
+        entity_classes=[DemoMediaPlayer, DemoRemote, DemoSelect],
     )
 
     # Configure the device config manager with DemoConfig

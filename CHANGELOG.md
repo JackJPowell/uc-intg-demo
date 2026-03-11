@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-_Changes in the next release_
+## v1.1.1 - 2026-03-11
+
+### Fixed
+
+- Corrected a bug where select entity would trigger connection timeouts
 
 ---
 

@@ -1,5 +1,5 @@
 # Core dependencies
-ucapi==0.5.2
+./lib/ucapi-0.5.3.dev0+gd11cfea3f.d20260320-py3-none-any.whl
 ucapi-framework==1.9.1
 pyee>=9.0
 

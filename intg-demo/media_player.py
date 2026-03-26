@@ -16,8 +16,15 @@ import ucapi
 from ucapi import MediaPlayer, media_player, EntityTypes
 from ucapi.media_player import DeviceClasses, Attributes
 
+import browser as demo_browser
 import device
 from const import DemoConfig
+from ucapi.api_definitions import (
+    BrowseOptions,
+    BrowseResults,
+    SearchOptions,
+    SearchResults,
+)
 from ucapi_framework import (
     create_entity_id,
     MediaPlayerAttributes,
@@ -33,6 +40,9 @@ FEATURES = [
     media_player.Features.TOGGLE,
     media_player.Features.PLAY_PAUSE,
     media_player.Features.MEDIA_TITLE,
+    media_player.Features.BROWSE_MEDIA,
+    media_player.Features.SEARCH_MEDIA,
+    media_player.Features.PLAY_MEDIA,
 ]
 
 
@@ -69,7 +79,7 @@ class DemoMediaPlayer(MediaPlayerEntity):
                 Attributes.STATE: media_player.States.UNKNOWN,
             },
             # Using STREAMING_BOX as the device class for the demo
-            device_class=DeviceClasses.STREAMING_BOX,
+            device_class=DeviceClasses.SPEAKER,
             cmd_handler=self.handle_command,
         )
 
@@ -105,6 +115,7 @@ class DemoMediaPlayer(MediaPlayerEntity):
         - OFF: Turn off the demo device
         - TOGGLE: Toggle power state
         - PLAY_PAUSE: Cycle to a random TV show and update media title
+        - PLAY_MEDIA: Play the show identified by params["media_id"]
 
         :param entity: The entity receiving the command (not used, same as self)
         :param cmd_id: The command identifier
@@ -132,12 +143,52 @@ class DemoMediaPlayer(MediaPlayerEntity):
                     # This is the main demo feature - cycles through random TV shows
                     await self._device.play_pause()
 
+                case media_player.Commands.PLAY_MEDIA:
+                    media_id = (params or {}).get("media_id", "")
+                    if media_id:
+                        await self._device.select_show(media_id)
+                    else:
+                        _LOG.warning("PLAY_MEDIA missing media_id parameter")
+                        return ucapi.StatusCodes.BAD_REQUEST
+
                 case _:
                     _LOG.warning("Unhandled command: %s", cmd_id)
                     return ucapi.StatusCodes.NOT_IMPLEMENTED
 
             return ucapi.StatusCodes.OK
 
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=broad-exception-caught
             _LOG.error("Error executing command %s: %s", cmd_id, ex)
             return ucapi.StatusCodes.BAD_REQUEST
+
+    async def browse(self, options: BrowseOptions) -> BrowseResults | ucapi.StatusCodes:
+        """
+        Handle a browse-media request from the remote.
+
+        Delegates to :mod:`browser` which walks the in-memory TV shows list.
+
+        :param options: Browse options supplied by the remote (media_id, paging, …)
+        :return: :class:`BrowseResults` on success, or a :class:`StatusCodes` on failure.
+        """
+        _LOG.debug("browse called: media_id=%s", options.media_id)
+        try:
+            return demo_browser.browse(options)
+        except Exception as ex:  # pylint: disable=broad-exception-caught
+            _LOG.error("Error browsing media: %s", ex)
+            return ucapi.StatusCodes.SERVER_ERROR
+
+    async def search(self, options: SearchOptions) -> SearchResults | ucapi.StatusCodes:
+        """
+        Handle a search-media request from the remote.
+
+        Performs a case-insensitive substring match on the TV shows list.
+
+        :param options: Search options supplied by the remote (query, paging, …)
+        :return: :class:`SearchResults` on success, or a :class:`StatusCodes` on failure.
+        """
+        _LOG.debug("search called: query=%s", options.query)
+        try:
+            return demo_browser.search(options)
+        except Exception as ex:  # pylint: disable=broad-exception-caught
+            _LOG.error("Error searching media: %s", ex)
+            return ucapi.StatusCodes.SERVER_ERROR

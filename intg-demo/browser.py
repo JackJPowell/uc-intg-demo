@@ -15,7 +15,7 @@ Search returns any TV show whose title contains the query string
 
 import logging
 
-from ucapi.api_definitions import (
+from ucapi import (
     BrowseMediaItem,
     BrowseOptions,
     BrowseResults,
@@ -64,7 +64,9 @@ def _make_item(
     )
 
 
-def _paginate(items: list, options: BrowseOptions) -> tuple[list, Pagination]:
+def _paginate(
+    items: list, options: BrowseOptions | SearchOptions
+) -> tuple[list, Pagination]:
     """Slice *items* according to the paging options and return the slice + metadata."""
     paging = options.paging
     page = (paging.page or 1) if paging else 1

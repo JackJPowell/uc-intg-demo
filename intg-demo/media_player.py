@@ -12,24 +12,21 @@ the ucapi-framework after changes.
 import logging
 from typing import Any
 
-import ucapi
-from ucapi import MediaPlayer, media_player, EntityTypes
-from ucapi.media_player import DeviceClasses, Attributes
-
 import browser as demo_browser
 import device
+import ucapi
 from const import DemoConfig
-from ucapi.api_definitions import (
+from ucapi import (
     BrowseOptions,
     BrowseResults,
+    EntityTypes,
+    MediaPlayer,
     SearchOptions,
     SearchResults,
+    media_player,
 )
-from ucapi_framework import (
-    create_entity_id,
-    MediaPlayerAttributes,
-    MediaPlayerEntity,
-)
+from ucapi.media_player import Attributes, DeviceClasses
+from ucapi_framework import MediaPlayerAttributes, MediaPlayerEntity, create_entity_id
 
 _LOG = logging.getLogger(__name__)
 

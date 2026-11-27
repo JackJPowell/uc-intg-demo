@@ -39,7 +39,7 @@ async def main():
 
     # Configure logging level from environment variable
     level = os.getenv("UC_LOG_LEVEL", "DEBUG").upper()
-    logging.getLogger("driver").setLevel(level)
+    logging.getLogger(__name__).setLevel(level)
     logging.getLogger("media_player").setLevel(level)
     logging.getLogger("remote").setLevel(level)
     logging.getLogger("select_entity").setLevel(level)

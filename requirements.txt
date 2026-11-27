@@ -1,6 +1,6 @@
 # Core dependencies
 ucapi==0.7.0
-ucapi-framework==1.9.8
+ucapi-framework==1.9.10
 pyee>=9.0
 
 # Discovery protocols (include what you need)

@@ -19,8 +19,10 @@ The demo device:
 """
 
 import asyncio
+import ctypes
 import logging
 import os
+import platform
 
 from const import DemoConfig
 from device import DemoDevice
@@ -43,6 +45,14 @@ async def main():
     logging.getLogger("select_entity").setLevel(level)
     logging.getLogger("device").setLevel(level)
     logging.getLogger("setup_flow").setLevel(level)
+
+    logger = logging.getLogger(__name__)
+    libc = ctypes.CDLL("libc.so.6")
+    libc.gnu_get_libc_version.restype = ctypes.c_char_p
+    logger.info("Runtime glibc version: %s", libc.gnu_get_libc_version().decode())
+    logger.info("Architecture: %s", platform.machine())
+    logger.info("Kernel: %s", platform.release())
+    logger.info("Python: %s", platform.python_version())
 
     # Initialize the integration driver with the demo device, media player, remote and select
     driver = BaseIntegrationDriver(
